@@ -1,0 +1,90 @@
+Option Explicit
+
+Sub ReplaceText(findText As String, ReplaceWith As String)
+
+    ' Replace the text in the document
+    If findText <> "" And ReplaceWith <> "" Then
+    With currentDoc.Content.Find
+        .ClearFormatting
+        .Text = findText
+        .Replacement.ClearFormatting
+        .Replacement.Text = ReplaceWith
+        .Execute Replace:=wdReplaceAll
+    End With
+    End If
+End Sub
+
+
+
+Sub Update_Classification(strClassification As String)
+Dim cc As ContentControl
+For Each cc In currentDoc.ContentControls
+'    Debug.Print cc.Title, cc.Tag
+    If cc.Title = "Insert classification" Then
+'        cc.Title = "Insert classification"
+        cc.Range.Text = strClassification
+'        Debug.Print cc.Range.Text
+        Exit For
+    End If
+    ' Do something with the Content Control
+Next cc
+End Sub
+
+
+Sub replaceImage(imagePath As String)
+
+Dim iLeft As Long, iTop As Long, iHeight As Long, iWidth As Long
+Dim shp As Shape
+
+Set shp = ActiveDocument.Shapes(1)
+iLeft = shp.Left
+iTop = shp.Top
+' Delete Shape
+shp.Delete
+' Add picture at the same position
+Set shp = ActiveDocument.Shapes.AddPicture(FileName:=imagePath, LinkToFile:=False, _
+    SaveWithDocument:=True)
+shp.Left = iLeft
+shp.Top = iTop
+' Adjust height if more than 250
+iHeight = shp.Height
+If iHeight > 200 Then
+    shp.Height = 250
+    shp.Width = 250 * shp.Width / iHeight
+End If
+
+End Sub
+
+Function getimagePath() As String
+    Dim fd As FileDialog
+    Set fd = Application.FileDialog(msoFileDialogFilePicker)
+
+    ' Set properties of the FileDialog object
+    fd.Title = "Select image files File"
+    fd.Filters.Clear
+    fd.Filters.Add "PNG files", "*.emf;*.wmf;*.jpg;*.jpeg;*.jfif;*.jpe;*.png;*.bmp;" _
+        & "*.dib;*.rle;*.jif;*.emz;*.wmz;*.tif;*.tiff;*.svg;*.ico"
+    fd.InitialFileName = ThisDocument.Path
+
+    ' Show the FileDialog and get the selected file
+    Dim selectedFilePath As Variant
+    selectedFilePath = fd.Show
+    
+    If Not selectedFilePath = False Then
+        ' Do something with the selected file path
+        getimagePath = fd.SelectedItems(1)
+    Else
+        getimagePath = ""
+    End If
+End Function
+
+Sub SearchText(findText As String)
+    ' Search for the text in the document
+    If findText <> "" Then
+        With currentDoc.Content.Find
+            .ClearFormatting
+            .Text = findText
+            .Execute
+        End With
+    End If
+End Sub
